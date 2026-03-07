@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const ProjectVersion = require("../models/ProjectVersion");
 const Review = require("../models/Review");
 const asyncHandler = require("../utils/asyncHandler");
 const { reviewCodeWithAI } = require("../services/openaiReviewService");
@@ -12,14 +13,32 @@ const reviewProjectCode = asyncHandler(async (req, res) => {
     throw new Error("Project not found");
   }
 
-  const versionId = req.query.versionId || project.currentVersionId;
+  const requestedVersionId = req.query.versionId || project.currentVersionId;
+  let filesSource = project.files;
+  let effectiveVersionId = requestedVersionId || null;
 
-  if (!project.files.length) {
+  if (requestedVersionId) {
+    const versionDoc = await ProjectVersion.findOne({
+      _id: requestedVersionId,
+      projectId: project._id,
+      userId: req.user._id,
+    });
+
+    if (!versionDoc) {
+      res.status(404);
+      throw new Error("Project version not found");
+    }
+
+    filesSource = versionDoc.files || [];
+    effectiveVersionId = versionDoc._id;
+  }
+
+  if (!filesSource.length) {
     res.status(400);
     throw new Error("No files found in project");
   }
 
-  const filesToReview = project.files.slice(0, 20);
+  const filesToReview = filesSource.slice(0, 20);
 
   const reviews = await Promise.all(
     filesToReview.map(async (file) => {
@@ -56,7 +75,7 @@ const reviewProjectCode = asyncHandler(async (req, res) => {
 
       return Review.create({
         projectId: project._id,
-        versionId: versionId || null,
+        versionId: effectiveVersionId,
         fileName: file.fileName,
         aiFeedback: aiResult.aiFeedback,
         qualityScore: aiResult.qualityScore,

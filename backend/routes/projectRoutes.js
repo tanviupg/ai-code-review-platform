@@ -4,6 +4,7 @@ const {
   getProjects,
   getProjectById,
   pasteCodeToProject,
+  deleteProject,
 } = require("../controllers/projectController");
 const {
   listProjectVersions,
@@ -16,6 +17,8 @@ const router = express.Router();
 
 router.post("/", protect, createProject);
 router.get("/", protect, getProjects);
+router.delete("/:id", protect, deleteProject);
+router.post("/:id/delete", protect, deleteProject);
 router.post("/:id/paste", protect, pasteCodeToProject);
 router.get("/:id/versions", protect, listProjectVersions);
 router.get("/:id/versions/compare", protect, compareProjectVersions);

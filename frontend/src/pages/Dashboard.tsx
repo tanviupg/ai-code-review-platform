@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { projectsApi, reviewApi } from "@/services/api";
-import { Plus, GitBranch, Bug, Shield, Zap, ArrowRight } from "lucide-react";
+import { Plus, GitBranch, Bug, Shield, Zap, ArrowRight, Trash2 } from "lucide-react";
 
 type ProjectRecord = {
   _id: string;
@@ -60,6 +60,7 @@ const Dashboard = () => {
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingProjectId, setDeletingProjectId] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -118,6 +119,23 @@ const Dashboard = () => {
 
     void load();
   }, []);
+
+  const handleDeleteProject = async (projectId: string, projectName: string) => {
+    const confirmed = window.confirm(`Delete project "${projectName}"? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      setDeletingProjectId(projectId);
+      setError("");
+      await projectsApi.remove(projectId);
+      setProjects((prev) => prev.filter((project) => project.id !== projectId));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete project";
+      setError(message);
+    } finally {
+      setDeletingProjectId("");
+    }
+  };
 
   const stats = useMemo(() => {
     const bugs = projects.reduce((sum, project) => sum + project.issues, 0);
@@ -193,33 +211,41 @@ const Dashboard = () => {
               <div className="px-4 py-3 text-sm text-muted-foreground">No projects yet.</div>
             ) : (
               projects.map((project) => (
-                <Link
-                  key={project.id}
-                  to={`/review/${project.id}`}
-                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-secondary/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <GitBranch className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-mono text-sm font-medium text-foreground">{project.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {project.language} � {project.lastReview}
-                      </p>
+                <div key={project.id} className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-secondary/30">
+                  <Link to={`/review/${project.id}`} className="mr-3 flex min-w-0 flex-1 items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <GitBranch className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
+                        <p className="truncate font-mono text-sm font-medium text-foreground">{project.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {project.language} · {project.lastReview}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className={`rounded border px-2 py-0.5 text-xs font-medium ${statusBadge(project.status)}`}>
-                      {project.status}
-                    </span>
-                    {project.score > 0 && (
-                      <span className={`font-mono text-sm font-bold ${severityColor(project.score)}`}>
-                        {project.score}/100
+                    <div className="ml-4 flex items-center gap-4">
+                      <span className={`rounded border px-2 py-0.5 text-xs font-medium ${statusBadge(project.status)}`}>
+                        {project.status}
                       </span>
-                    )}
-                    <span className="text-xs text-muted-foreground">{project.issues} issues</span>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </Link>
+                      {project.score > 0 && (
+                        <span className={`font-mono text-sm font-bold ${severityColor(project.score)}`}>
+                          {project.score}/100
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground">{project.issues} issues</span>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => void handleDeleteProject(project.id, project.name)}
+                    disabled={deletingProjectId === project.id}
+                    className="rounded-md border border-destructive/30 px-2 py-1 text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label={`Delete ${project.name}`}
+                    title="Delete Project"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               ))
             )}
           </div>

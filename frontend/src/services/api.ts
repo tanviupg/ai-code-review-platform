@@ -48,6 +48,16 @@ export const projectsApi = {
   list: () => api.get("/projects"),
   create: (data: { name: string; repoUrl?: string | null }) => api.post("/projects", data),
   get: (id: string) => api.get(`/projects/${id}`),
+  remove: async (id: string) => {
+    try {
+      return await api.delete(`/projects/${id}`);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return api.post(`/projects/${id}/delete`);
+      }
+      throw error;
+    }
+  },
   pasteCode: (id: string, data: { fileName: string; content: string }) =>
     api.post(`/projects/${id}/paste`, data),
 };

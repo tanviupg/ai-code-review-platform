@@ -1,6 +1,7 @@
 const Project = require("../models/Project");
 const ProjectVersion = require("../models/ProjectVersion");
 const asyncHandler = require("../utils/asyncHandler");
+const { createVersionSnapshot } = require("../services/projectVersionService");
 
 const ensureProjectAccess = async ({ projectId, userId }) => {
   const project = await Project.findOne({ _id: projectId, userId });
@@ -16,9 +17,23 @@ const listProjectVersions = asyncHandler(async (req, res) => {
   const { id: projectId } = req.params;
   const project = await ensureProjectAccess({ projectId, userId: req.user._id });
 
-  const versions = await ProjectVersion.find({ projectId, userId: req.user._id })
+  let versions = await ProjectVersion.find({ projectId, userId: req.user._id })
     .select("versionNumber source notes files createdAt")
     .sort({ versionNumber: -1 });
+
+  // Backfill legacy projects that have files but no version snapshots yet.
+  if (!versions.length && Array.isArray(project.files) && project.files.length > 0) {
+    const inferredSource = project.files[0]?.source || "upload";
+    await createVersionSnapshot({
+      project,
+      source: inferredSource,
+      notes: "Baseline version auto-created from existing project files.",
+    });
+
+    versions = await ProjectVersion.find({ projectId, userId: req.user._id })
+      .select("versionNumber source notes files createdAt")
+      .sort({ versionNumber: -1 });
+  }
 
   res.json({
     success: true,

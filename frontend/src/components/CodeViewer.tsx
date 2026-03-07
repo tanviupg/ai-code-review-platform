@@ -6,6 +6,7 @@ import { Bug, Shield, Zap, Lightbulb } from "lucide-react";
 interface Props {
   code: string;
   language: string;
+  fileName?: string;
   issues: ReviewIssue[];
   selectedIssue: ReviewIssue | null;
 }
@@ -28,7 +29,7 @@ const issueColor = (type: string) => {
   }
 };
 
-const CodeViewer = ({ code, language, issues, selectedIssue }: Props) => {
+const CodeViewer = ({ code, language, fileName = "code", issues, selectedIssue }: Props) => {
   const issueLines = new Map<number, ReviewIssue[]>();
   issues.forEach((issue) => {
     for (let l = issue.lineStart; l <= issue.lineEnd; l++) {
@@ -46,7 +47,7 @@ const CodeViewer = ({ code, language, issues, selectedIssue }: Props) => {
           <span className="h-3 w-3 rounded-full bg-warning/60" />
           <span className="h-3 w-3 rounded-full bg-success/60" />
         </div>
-        <span className="font-mono text-xs text-muted-foreground">server.ts</span>
+        <span className="font-mono text-xs text-muted-foreground">{fileName}</span>
       </div>
 
       <div className="relative overflow-auto text-sm">

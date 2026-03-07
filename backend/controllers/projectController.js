@@ -1,4 +1,7 @@
 const Project = require("../models/Project");
+const ProjectVersion = require("../models/ProjectVersion");
+const Review = require("../models/Review");
+const Comment = require("../models/Comment");
 const asyncHandler = require("../utils/asyncHandler");
 const { fetchRepoFilesFromGitHub } = require("../services/githubService");
 const { createVersionSnapshot } = require("../services/projectVersionService");
@@ -136,9 +139,36 @@ const pasteCodeToProject = asyncHandler(async (req, res) => {
   });
 });
 
+const deleteProject = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const project = await Project.findOne({ _id: id, userId: req.user._id });
+
+  if (!project) {
+    res.status(404);
+    throw new Error("Project not found");
+  }
+
+  const reviews = await Review.find({ projectId: id }).select("_id");
+  const reviewIds = reviews.map((review) => review._id);
+
+  if (reviewIds.length > 0) {
+    await Comment.deleteMany({ reviewId: { $in: reviewIds } });
+  }
+
+  await Review.deleteMany({ projectId: id });
+  await ProjectVersion.deleteMany({ projectId: id, userId: req.user._id });
+  await Project.deleteOne({ _id: id, userId: req.user._id });
+
+  res.json({
+    success: true,
+    message: "Project deleted successfully",
+  });
+});
+
 module.exports = {
   createProject,
   getProjects,
   getProjectById,
   pasteCodeToProject,
+  deleteProject,
 };
