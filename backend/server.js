@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const helmet = require("helmet");
 const path = require("path");
+const rateLimit = require("express-rate-limit");
 
 const connectDB = require("./config/db");
+const { getRuntimeConfig, validateEnvironment } = require("./config/env");
 
 const authRoutes = require("./routes/authRoutes");
 const projectRoutes = require("./routes/projectRoutes");
@@ -16,11 +19,37 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 dotenv.config();
 
 const app = express();
+const config = getRuntimeConfig();
 
-const configuredOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173,http://localhost:5174,http://localhost:5184,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5184")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const configuredOrigins = config.allowedOrigins;
+
+if (config.enableRequestLogging) {
+  app.use((req, _res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    next();
+  });
+}
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
+
+app.use(
+  rateLimit({
+    windowMs: config.rateLimitWindowMs,
+    max: config.rateLimitMaxRequests,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      message: "Too many requests, please try again later.",
+    },
+  })
+);
 
 app.use(
   cors({
@@ -39,13 +68,23 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: config.jsonBodyLimit }));
 app.use(express.urlencoded({ extended: true }));
 
 // static folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// test route
+// health and readiness routes
+app.get("/health", (_req, res) => {
+  res.json({
+    success: true,
+    status: "ok",
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    env: config.nodeEnv,
+  });
+});
+
 app.get("/", (req, res) => {
   res.json({ success: true, message: "AI Code Review API is running" });
 });
@@ -62,17 +101,7 @@ app.use("/api/comments", commentRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-
-const validateEnvironment = () => {
-  const missing = [];
-  if (!process.env.MONGO_URI) missing.push("MONGO_URI");
-  if (!process.env.JWT_SECRET) missing.push("JWT_SECRET");
-
-  if (missing.length) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
-  }
-};
+const PORT = config.port;
 
 const startServer = async () => {
   validateEnvironment();

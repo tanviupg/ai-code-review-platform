@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: ai-code-review-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
+      - key: USE_OPENAI_REVIEW
+        value: "false"
+      - key: ENABLE_REQUEST_LOGGING
+        value: "false"
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+staticSites:
+  - name: ai-code-review-frontend
+    plan: free
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://ai-code-review-api.onrender.com/api

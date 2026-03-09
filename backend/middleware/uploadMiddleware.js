@@ -30,8 +30,9 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 1024 * 1024 * 2,
-    files: 20,
+    fileSize: Number.parseInt(process.env.MAX_UPLOAD_FILE_SIZE || "", 10) || 1024 * 1024 * 2,
+    files: Number.parseInt(process.env.MAX_UPLOAD_FILES || "", 10) || 20,
+    fields: Number.parseInt(process.env.MAX_FORM_FIELDS || "", 10) || 30,
   },
 });
 

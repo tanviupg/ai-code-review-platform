@@ -1,0 +1,160 @@
+{
+  "evaluatedAt": "2026-03-09T18:19:28.552Z",
+  "datasetSize": 6,
+  "overallAccuracy": 91.67,
+  "exactMatchAccuracy": 66.67,
+  "metricsByLabel": {
+    "bugs": {
+      "confusion": {
+        "tp": 2,
+        "tn": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "precision": 100,
+      "recall": 100,
+      "f1": 100,
+      "accuracy": 100
+    },
+    "securityIssues": {
+      "confusion": {
+        "tp": 1,
+        "tn": 5,
+        "fp": 0,
+        "fn": 0
+      },
+      "precision": 100,
+      "recall": 100,
+      "f1": 100,
+      "accuracy": 100
+    },
+    "performanceIssues": {
+      "confusion": {
+        "tp": 2,
+        "tn": 4,
+        "fp": 0,
+        "fn": 0
+      },
+      "precision": 100,
+      "recall": 100,
+      "f1": 100,
+      "accuracy": 100
+    },
+    "codeImprovements": {
+      "confusion": {
+        "tp": 4,
+        "tn": 0,
+        "fp": 2,
+        "fn": 0
+      },
+      "precision": 66.67,
+      "recall": 100,
+      "f1": 80,
+      "accuracy": 66.67
+    }
+  },
+  "sampleResults": [
+    {
+      "id": "s1-memory-leak",
+      "exactMatch": false,
+      "expected": {
+        "bugs": true,
+        "securityIssues": false,
+        "performanceIssues": false,
+        "codeImprovements": false
+      },
+      "predicted": {
+        "bugs": true,
+        "securityIssues": false,
+        "performanceIssues": false,
+        "codeImprovements": true
+      },
+      "qualityScore": 8
+    },
+    {
+      "id": "s2-security-apis",
+      "exactMatch": false,
+      "expected": {
+        "bugs": false,
+        "securityIssues": true,
+        "performanceIssues": false,
+        "codeImprovements": false
+      },
+      "predicted": {
+        "bugs": false,
+        "securityIssues": true,
+        "performanceIssues": false,
+        "codeImprovements": true
+      },
+      "qualityScore": 6
+    },
+    {
+      "id": "s3-performance-loop",
+      "exactMatch": true,
+      "expected": {
+        "bugs": false,
+        "securityIssues": false,
+        "performanceIssues": true,
+        "codeImprovements": true
+      },
+      "predicted": {
+        "bugs": false,
+        "securityIssues": false,
+        "performanceIssues": true,
+        "codeImprovements": true
+      },
+      "qualityScore": 9
+    },
+    {
+      "id": "s4-short-improvement",
+      "exactMatch": true,
+      "expected": {
+        "bugs": false,
+        "securityIssues": false,
+        "performanceIssues": false,
+        "codeImprovements": true
+      },
+      "predicted": {
+        "bugs": false,
+        "securityIssues": false,
+        "performanceIssues": false,
+        "codeImprovements": true
+      },
+      "qualityScore": 10
+    },
+    {
+      "id": "s5-throw-without-try",
+      "exactMatch": true,
+      "expected": {
+        "bugs": true,
+        "securityIssues": false,
+        "performanceIssues": false,
+        "codeImprovements": true
+      },
+      "predicted": {
+        "bugs": true,
+        "securityIssues": false,
+        "performanceIssues": false,
+        "codeImprovements": true
+      },
+      "qualityScore": 8
+    },
+    {
+      "id": "s6-noisy-file",
+      "exactMatch": true,
+      "expected": {
+        "bugs": false,
+        "securityIssues": false,
+        "performanceIssues": true,
+        "codeImprovements": true
+      },
+      "predicted": {
+        "bugs": false,
+        "securityIssues": false,
+        "performanceIssues": true,
+        "codeImprovements": true
+      },
+      "qualityScore": 7
+    }
+  ]
+}

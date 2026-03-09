@@ -1,0 +1,74 @@
+[
+  {
+    "id": "s1-memory-leak",
+    "fileName": "memory.c",
+    "language": "c",
+    "content": "int main(){ int* p = malloc(100); return 0; }",
+    "expected": {
+      "bugs": true,
+      "securityIssues": false,
+      "performanceIssues": false,
+      "codeImprovements": false
+    }
+  },
+  {
+    "id": "s2-security-apis",
+    "fileName": "unsafe.c",
+    "language": "c",
+    "content": "int main(){ char buf[8]; strcpy(buf, \"abcd\"); system(\"ls\"); return 0; }",
+    "expected": {
+      "bugs": false,
+      "securityIssues": true,
+      "performanceIssues": false,
+      "codeImprovements": false
+    }
+  },
+  {
+    "id": "s3-performance-loop",
+    "fileName": "perf.cpp",
+    "language": "cpp",
+    "content": "for (int i=0;i<n;i++){ for (int j=0;j<m;j++){ sum += i+j; } }",
+    "expected": {
+      "bugs": false,
+      "securityIssues": false,
+      "performanceIssues": true,
+      "codeImprovements": true
+    }
+  },
+  {
+    "id": "s4-short-improvement",
+    "fileName": "short.ts",
+    "language": "ts",
+    "content": "const x = 1;",
+    "expected": {
+      "bugs": false,
+      "securityIssues": false,
+      "performanceIssues": false,
+      "codeImprovements": true
+    }
+  },
+  {
+    "id": "s5-throw-without-try",
+    "fileName": "throw.cpp",
+    "language": "cpp",
+    "content": "int main(){ throw 1; return 0; }",
+    "expected": {
+      "bugs": true,
+      "securityIssues": false,
+      "performanceIssues": false,
+      "codeImprovements": true
+    }
+  },
+  {
+    "id": "s6-noisy-file",
+    "fileName": "mixed.cpp",
+    "language": "cpp",
+    "content": "using namespace std; int main(){ for (int i=0;i<n;i++){ for (int j=0;j<m;j++){ cout << i << std::endl; } } return 0; }",
+    "expected": {
+      "bugs": false,
+      "securityIssues": false,
+      "performanceIssues": true,
+      "codeImprovements": true
+    }
+  }
+]

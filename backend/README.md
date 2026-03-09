@@ -13,6 +13,26 @@
 
 If you use MongoDB Atlas instead of local MongoDB, update `MONGO_URI` in `.env` and make sure your current IP is whitelisted in Atlas Network Access.
 
+## Quality Checks
+
+- Run tests:
+  `npm test`
+- Run heuristic evaluation and compute accuracy metrics:
+  `npm run eval:accuracy`
+
+Evaluation report is generated at `evaluation/latest-report.json`.
+
+## Production Notes
+
+- Use `NODE_ENV=production`
+- Set `FRONTEND_ORIGIN` to your deployed frontend URL (for CORS)
+- Health endpoint: `GET /health`
+- Request hardening enabled with `helmet` and rate-limiting
+- Upload limits can be tuned with:
+  - `MAX_UPLOAD_FILE_SIZE`
+  - `MAX_UPLOAD_FILES`
+  - `MAX_FORM_FIELDS`
+
 ## API Routes
 
 - `POST /api/auth/register`

@@ -25,15 +25,20 @@ const uploadCodeFiles = asyncHandler(async (req, res) => {
 
   const uploadedFiles = await Promise.all(
     req.files.map(async (file) => {
-      const content = await fs.readFile(file.path, "utf8");
-      return {
-        fileName: file.originalname,
-        language: getLanguageFromFileName(file.originalname),
-        content,
-        size: file.size,
-        source: "upload",
-        uploadedAt: new Date(),
-      };
+      try {
+        const content = await fs.readFile(file.path, "utf8");
+        return {
+          fileName: file.originalname,
+          language: getLanguageFromFileName(file.originalname),
+          content,
+          size: file.size,
+          source: "upload",
+          uploadedAt: new Date(),
+        };
+      } finally {
+        // Uploaded files are persisted in MongoDB, so temp files can be cleaned up.
+        await fs.unlink(file.path).catch(() => {});
+      }
     })
   );
 
